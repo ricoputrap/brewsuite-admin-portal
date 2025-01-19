@@ -1,6 +1,6 @@
 import { LOKI_URL } from "./env";
 import type { Logger } from "pino";
-import { Registry, collectDefaultMetrics } from "prom-client";
+import { Registry, collectDefaultMetrics, Counter } from "prom-client";
 
 declare global {
   // var usage is required for global declaration
@@ -9,7 +9,8 @@ declare global {
 
   // eslint-disable-next-line no-var
   var metrics: {
-    registry: Registry
+    registry: Registry;
+    userSignups: Counter;
   } | undefined;
 }
 
@@ -34,6 +35,20 @@ export async function register() {
 
     const prometheusRegistry = new Registry();
     collectDefaultMetrics({ register: prometheusRegistry });
-    globalThis.metrics = { registry: prometheusRegistry };
+
+    // user signups counter
+    const userSignups = new Counter({
+      name: "user_signups_total",
+      help: "Total number of user signups",
+      labelNames: ['plan_type', 'referral_source'],
+      registers: [prometheusRegistry],
+    });
+
+    prometheusRegistry.registerMetric(userSignups);
+
+    globalThis.metrics = {
+      registry: prometheusRegistry,
+      userSignups
+    };
   }
 }
