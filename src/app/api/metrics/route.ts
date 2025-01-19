@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
 export async function GET() {
   const metrics = await globalThis.metrics?.registry?.metrics();
-  return NextResponse.json(metrics, {
+  return new NextResponse(metrics, {
     headers: {
-      'Content-Type': 'text/plain'
-    }
+      'Content-Type': 'text/plain',
+    },
   });
 }
